@@ -1,0 +1,197 @@
+---
+title: "HW2"
+author: "Jinwoo Jeong"
+date: '2022 2 2 '
+output:
+  html_document: default
+  word_document: default
+---
+
+# prob 1
+
+### Part a
+
+the cubic regression has lower RSS than the linear regression since it make more tighter fit on the data
+
+### Part b
+
+it might be opposite to the prob a, since the model has more error. thus cubic regression has more higher RSS using the test
+
+### Part c
+
+the cubic regression has lower RSS since it has more highre flexibility compare to linear regression. Since the model is higher flexibility will be close with the actual point
+
+### Part d
+
+We cannot tell which one is higher or lower. since it has tradeoff between both regression
+
+
+
+# prob 2
+
+$$ \hat{y}_i = x_i \frac {\sum_{i=1}^{n} x_iy_i}{\sum_{k=1}^{n} x_k^2} =\frac {\sum_{i=1}^{n} x_iy_i}{\sum_{k=1}^{n} x_k^2} y_i = \sum_{k=1}^{n} a_iy_i $$
+
+
+# prob 3
+
+$$ R^2 = 1-\frac {RSS}{TSS}= 1 -\frac { \sum_{i=1}^{n} (y_i - \bar{y})^2} { \sum_{j=1}^{n} y_j^2 }$$
+$$ R^2 = 1 -\frac { \sum_{i=1}^{n}(y_i - \sum_{j=1} x_jy_j/\sum_{j=1}x_j^2x_i)^2} { \sum_{j=1}^{n} y_j^2 } =
+\frac { \sum_{j=1}^{n}y_j^2 - (\sum_iy_i^2-2\sum_iy_i(\sum_jx_jy_j/\sum_jx_j^2)x_i   \sum_{i=1}( x_jy_j/\sum_{j=1}x_j^2)^2 x_j^2)} { \sum_{j=1}^{n} y _j^2 } $$
+
+$$ R^2=\frac { 2(\sum_ix_iy_i)/\sum_jx_j^2 -  (\sum_{i=1} x_iy_i)^2/\sum_{j=1}x_j^2 } { \sum_{j=1}^{n} y _j^2 } =  \frac {(\sum_ix_iy_i)^2}{\sum_jx_j^2\sum_jy_j^2} = Cor(X,Y)^2$$
+
+
+# prob 4
+
+### Part a
+
+```{r}
+library(ISLR)
+library(MASS)
+
+
+model1 = lm(Sales ~ Population + Urban + US, data=Carseats)
+summary(model1)
+```
+
+### Part b
+
+sales: Unit sales (in thousands) at each location
+Population: Population size in region (in thousands)
+Urban: A factor with levels No and Yes to indicate whether the store is in an urban or rural location
+US: A factor with levels No and Yes to indicate whether the store is in the US or not
+
+
+### Part c
+
+6.726 + 0.007415*Population - 0.1341034(if urban) + 1.0261(if US)
+
+### Part d
+
+For the intercept , and USYes, we can reject the null hypothesis.
+
+## Part e
+
+```{r}
+model2 = lm(Sales ~ US, data=Carseats)
+summary(model2)
+```
+
+### Part f
+
+The model2 fits better. It has better adjusted R^2 and the p value.
+
+### Part g
+
+```{r}
+confint(model2)
+```
+
+### Part h
+
+```{r}
+par(mfrow=c(2,2))
+plot(model2)
+```
+
+there are some outliers on 3 on residuals and there is no high leverage observations 
+
+
+
+# prob 5
+
+### Part a
+
+```{r}
+set.seed(1)
+x=rnorm(100)
+```
+
+### Part b
+
+```{r}
+eps=rnorm(100,0,0.25)
+```
+
+### Part c
+
+```{r}
+y=-1+0.5*x+eps
+length(y)
+```
+
+y is length 100, B0 is -1 and B1 is 0.5.
+
+### Part d
+
+```{r}
+plot(x,y)
+abline(lm(y~x))
+```
+
+### Part e
+
+```{r}
+model3=lm(y~x)
+summary(model3)
+```
+The predicted B0 and B1 close to the part c
+
+### Part f
+
+```{r}
+plot(x,y)
+abline(lm(y~x),col="red")
+abline(-1, 0.5, col = "blue")
+legend("bottomright", c("Least square", "Regression"), col = c("red", "blue"), lty = c(1, 1))
+
+```
+
+
+### Part g
+
+```{r}
+model4=lm(y~poly(x,2))
+summary(model4)
+```
+The squared term is not significant and Adjusted R-squared is not better, thus we cannot say quadratic term works better with the model
+
+### Part h
+
+```{r}
+eps2=rnorm(100,0,0.05)
+y2=-1+0.5*x+eps2
+model5=lm(y2~x)
+summary(model5)
+plot(x,y2)
+abline(model5,col="red")
+abline(-1, 0.5, col = "blue")
+legend("bottomright", c("Least square", "Regression"), col = c("red", "blue"), lty = c(1, 1))
+```
+
+The estimate of model are close with the underlying model and having more higher R squared line and point fits tightly.
+
+### Part i
+
+```{r}
+eps3=rnorm(100,0,1)
+y3=-1+0.5*x+eps3
+model6=lm(y3~x)
+summary(model6)
+plot(x,y3)
+abline(model6,col="red")
+abline(-1, 0.5, col = "blue")
+legend("bottomright", c("Least square", "Regression"), col = c("red", "blue"), lty = c(1, 1))
+```
+
+it is hard to estimate the intercept and slope with more noise, compare to the model 3 and 4 it is not close as them.
+
+### Part j
+
+```{r}
+confint(model3)
+confint(model5)
+confint(model6)
+```
+
+the confidence interval is smallest when the error is getting smaller, and higher when the error gets higher.
