@@ -1,0 +1,112 @@
+---
+title: "HW3"
+author: "Jinwoo Jeong"
+date: '2022 2 13 '
+output:
+  pdf_document: default
+  html_document: default
+---
+
+# Problem 1. ISLR Ch. 8.4, page 362, Exercise 6
+
+Regression Tree Algorithm 
+
+First, we have to divide predictor space for X1 -Xp into J distinct and non-overlapping rectangular regions (R1 - Rj). 
+
+Second, Take an average of all observations belonging to zone Rj and have the same prediction
+
+To split the space we use 
+$$ \sum_{j=1}^J\sum_{i \in R_j}(y_i-\hat{y}_{R_j})^2 $$ to reduce the RSS.The approach considers all predictors then chooses the predictor and cutpoint that leads to a tree with the lowest amount of RSS.
+For that approach we uses recursive binary splitting. From the top to down and splits towards the best decision. Select variable Xj and select breakpoints s to divide the explanatory variable space. s selects the space divided by s in the direction in which RSS should be minimized. The main purpose is to reduce the predictor space to the area with the least RSS. In this approach, all predictors are considered, and then the predictors and cutpoints leading to the tree with the least RSS amount are selected.
+
+
+# Problem 2. ISLR Ch. 8.4, page 363, Exercise 9
+
+```{r}
+library(ISLR)
+set.seed(4052)
+```
+
+
+### Part a
+```{r}
+train <- sample(1:nrow(OJ), 800)
+oj.train = OJ[train,]
+oj.test = OJ[-train,]
+```
+
+
+### Part b
+```{r}
+library(tree)
+oj.tree = tree(Purchase ~ ., data = oj.train)
+summary(oj.tree)
+```
+6 variables (LoyalCH,SalePriceMM,SpecialCH,ListPriceDiff,PriceDiff,STORE) for tree construction
+9 terminal nodes
+Misclassification error rate of the tree is 0.1638   
+
+### Part c
+```{r}
+oj.tree
+```
+node 31) The splitting variable at this node is "STORE". The splitting value of node is 1.5. Node have 129 points in the subtree. The deviance for all points contained in region below this node is 130. It is the terminal node with the *sign. The prediction at this node is Sales = CH. About 95% points in this node have CH as value of Sales. Remaining 5% points have MM as value of Sales
+
+
+### Part d
+```{r}
+plot(oj.tree)
+text(oj.tree, pretty = 0)
+```
+LoyalCH is the important predictor for the tree. For lower part decision depends on the value of SalesPrice, ListPrice, Price. 
+
+### Part e
+```{r}
+oj.pred = predict(oj.tree, oj.test, type = "class")
+table(oj.test$Purchase, oj.pred)
+1-(136+78)/270
+```
+Test error rate is 0.2074074
+
+### Part f
+```{r}
+cv.oj = cv.tree(oj.tree, FUN = prune.tree)
+cv.oj
+```
+
+
+### Part g
+```{r}
+plot(cv.oj$size, cv.oj$dev, type = "b", xlab = "Tree Size", ylab = "Deviance")
+
+```
+
+### Part h
+
+Size 5 gives lowest cross-validation error.
+
+
+
+### Part i
+
+```{r}
+oj.pruned = prune.tree(oj.tree, best = 5)
+
+```
+
+### Part j
+```{r}
+summary(oj.pruned)
+
+```
+Misclassification error rate of pruned tree is 0.1875 higher than original tree 0.1638 
+
+
+
+### Part k
+```{r}
+prune.pred <- predict(oj.pruned, oj.test, type = "class")
+table(prune.pred, oj.test$Purchase)
+1-(114+92)/270
+```
+Pruned tree has higher error rate (0.237037) compare to unpruned trees (0.2074074)

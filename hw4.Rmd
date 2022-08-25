@@ -1,0 +1,109 @@
+---
+title: "HW4"
+author: "Jinwoo Jeong"
+date: "3/2/2022"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+## Problem 1. ISLR Ch. 10.10, page 459, Exercise 6
+
+### a
+
+```{r}
+theta = seq(-6,6,0.01)
+plot(theta,sin(theta)+theta/10)
+```
+
+### b
+the derivation is 
+$$   R(\theta)' = cos(\theta) + 1/10   $$
+
+### c
+```{r}
+rho = 0.1
+b_gd <- rep(2.3, 501)
+
+for (i in 1:500)
+{
+  gd <- rho*(cos(b_gd[i])+(1/10))
+  b_gd[i+1] <- b_gd[i] - gd
+}
+
+plot(x=seq(1,501,1), y=b_gd)
+which.max(b_gd)
+b_gd[334] 
+
+
+```
+
+the maximum for this gradient descent is 4.6122
+
+
+
+
+### d
+```{r}
+rho = 0.1
+b_gd <- rep(1.4, 501)
+
+for (i in 1:500)
+{
+  gd <- rho*(cos(b_gd[i])+(1/10))
+  b_gd[i+1] <- b_gd[i] - gd
+}
+
+plot(x=seq(1,501,1), y=b_gd)
+which.min(b_gd)
+b_gd[356] 
+```
+
+the maximum for this gradient descent is -1.671
+
+
+
+
+
+## Problem 2. ISLR Ch. 10.10, page 459, Exercise 7
+
+```{r}
+library(ISLR2)
+library(keras)
+library(tidyr)
+
+sum(is.na(Default))
+```
+```{r}
+x <- scale(model.matrix(default ~ . - 1, data = Default))
+x <- model.matrix(default ~ . - 1, data = Default) %>% scale()
+y <- Default$default
+ 
+n <- nrow(x)
+set.seed(4052)
+train <- sample(1:n, n*.5)
+default.train <- y[train]
+default.test <- y[-train]
+```
+
+```{r}
+lm_fit <- lm(as.numeric(default) ~ . - 1, data = Default[-train,])
+lm_pred <- predict(lm_fit, Default[train,])
+with(Default[train,], mean(abs(lm_pred - as.numeric(default))))
+```
+```{r}
+default_nn <-  keras_model_sequential() %>%  layer_dense(units = 10, activation = "relu",input_shape = c(4)) %>% layer_dropout(rate = 0.7) %>% layer_dense(units = 1, activation = 'sigmoid')
+
+summary(default_nn)
+
+default_nn %>% compile(loss = "categorical_crossentropy",optimizer = optimizer_rmsprop(),metrics = c("accuracy"))
+
+system.time(history <- default_nn %>% fit(x[-train, ], as.numeric(as.factor(default.train)), epochs = 100, batch_size = 254,validation_split = 0.2,validation_data = list(x[-train, ], as.numeric(as.factor(default.test)))))
+
+accuracy <- function(pred , truth)
+mean(drop(as.numeric(pred)) == drop(truth))
+
+default_nn %>% predict(x[-train, ]) %>%  k_argmax()  %>% accuracy(as.numeric(default.test))
+```
+
+comparing each linear has 8% and NN has 0% error rate, I dont know why it keep coming out with the 0%....
